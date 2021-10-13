@@ -1,24 +1,43 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useCallback, useEffect, useState } from "react";
+import { TodoListResponse } from "src/model/todos";
+import { fetchTodos } from "src/backend/fetchTodos";
+import { CopyToClipboardButton } from "src/components/CopyToClipboardButton";
+import { PrintButton } from "src/components/PrintButton";
+import { TodoTable } from "src/components/table/TodoTable";
+import { ShowError } from "src/components/ShowError";
+import { ShowLoadingMessage } from "src/components/ShowLoadingMessage";
 
 function App() {
+  const [todoList, setTodoList] = useState<TodoListResponse>();
+  const [error, setError] = useState<Error | null>(null);
+
+  const loadAndUpdateTodos = useCallback(() => {
+    fetchTodos()
+      .then(setTodoList)
+      .catch((error) => {
+        setError(error);
+      });
+  }, []);
+
+  useEffect(() => {
+    loadAndUpdateTodos();
+  }, [loadAndUpdateTodos]);
+
+  if (error != null) {
+    return <ShowError error={error} />;
+  }
+
+  if (todoList == null) {
+    return <ShowLoadingMessage />;
+  }
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <div className={"actionButtons"}>
+        <CopyToClipboardButton todoList={todoList} />
+        <PrintButton todoList={todoList} />
+      </div>
+      <TodoTable todoList={todoList} onChange={() => loadAndUpdateTodos()} />
     </div>
   );
 }
