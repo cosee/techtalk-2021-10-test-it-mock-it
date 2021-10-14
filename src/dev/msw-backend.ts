@@ -4,6 +4,7 @@ import { TodoRequest, TodoResponse } from "src/model/todos";
 export async function startMswApi(): Promise<void> {
   const todos: TodoResponse[] = [
     { id: 1, name: "Get up", description: "Out of the bed!" },
+    { id: 2, name: "Break-feast", description: "Ham & Eggs" },
   ];
   let idCounter = 3;
 

@@ -12,16 +12,8 @@ const server = setupServer(
     return res(
       ctx.json<TodoListResponse>({
         todos: [
-          {
-            id: 1,
-            name: "Wake up",
-            description: "Out of the bed",
-          },
-          {
-            id: 2,
-            name: "Have breakfast",
-            description: "Cereals, yumm",
-          },
+          { id: 1, name: "Wake up", description: "Out of the bed" },
+          { id: 2, name: "Have breakfast", description: "Cereals, yumm" },
         ],
       })
     );

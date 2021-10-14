@@ -6,19 +6,12 @@ import {render, screen} from "@testing-library/react";
 beforeEach(() => {
   nock.disableNetConnect();
   nock("http://localhost")
+      .persist()
     .get("/api/todos")
     .reply(200, {
       todos: [
-        {
-          id: 1,
-          name: "Wake up",
-          description: "Out of the bed",
-        },
-        {
-          id: 2,
-          name: "Have breakfast",
-          description: "Cereals, yumm",
-        },
+        { id: 1, name: "Wake up", description: "Out of the bed" },
+        { id: 2, name: "Have breakfast", description: "Cereals, yum" },
       ],
     });
 });
@@ -26,7 +19,9 @@ beforeEach(() => {
 afterEach(() => {
   nock.enableNetConnect();
   nock.restore();
+  nock.cleanAll()
 });
+
 
 test("renders the name of the todos loaded from the backend", async () => {
   render(<App />);
@@ -34,6 +29,3 @@ test("renders the name of the todos loaded from the backend", async () => {
   expect(await screen.findByText("Have breakfast")).toBeInTheDocument();
 });
 
-afterEach(() => {
-  nock.cleanAll();
-});
