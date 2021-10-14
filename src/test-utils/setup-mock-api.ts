@@ -20,8 +20,7 @@ export function setupMockApi(...requestHandlers: RequestHandler[]): SetupMockApi
     beforeEach(async () => {
         capturedRequests = []
         server.listen({onUnhandledRequest: "error"})
-        server.events.on("request:start", request => {
-            console.log(request.url.pathname)
+        server.events.on("request:end", request => {
             capturedRequests.push({
                 method: request.method,
                 pathname: request.url.pathname,

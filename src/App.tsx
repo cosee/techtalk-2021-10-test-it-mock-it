@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { TodoListResponse, TodoRequest } from "src/model/todos";
 import { fetchTodos } from "src/backend/fetchTodos";
 import { addTodo } from "src/backend/addTodo";
-import {AxiosError} from "axios";
+import { printHtml } from "src/utils/print";
 
 function App() {
   const [todoList, setTodoList] = useState<TodoListResponse>();
@@ -11,10 +11,14 @@ function App() {
     description: "",
   });
 
-  const [error, setError] = useState<AxiosError<{message: string}> | null>(null);
+  const [error, setError] = useState<Error | null>(
+    null
+  );
 
   useEffect(() => {
-    fetchTodos().then(setTodoList).catch(setError);
+    fetchTodos().then(setTodoList).catch((error) => {
+      setError(error);
+    });
   }, []);
 
   async function submit() {
@@ -27,7 +31,7 @@ function App() {
     return (
       <div>
         <h1>An error occurred while loading todos</h1>
-          <p>{error.message}</p>
+        <p>{error.message}</p>
       </div>
     );
   }
@@ -39,46 +43,78 @@ function App() {
   return (
     <div className="App">
       <table>
-        <tr className={"addTodoForm"}>
-          <td>
-            <input
-              type={"text"}
-              placeholder={"Name"}
-              onChange={(event) =>
-                setNewTodo((newTodo) => ({
-                  ...newTodo,
-                  name: event.target.value,
-                }))
-              }
-            />
-          </td>
-          <td>
-            <input
-              type={"text"}
-              placeholder={"Description"}
-              onChange={(event) =>
-                setNewTodo((newTodo) => ({
-                  ...newTodo,
-                  description: event.target.value,
-                }))
-              }
-            />
-          </td>
-          <td>
-            <button onClick={submit}>+</button>
-          </td>
-        </tr>
-        {todoList.todos.map((todo) => {
-          return (
-            <tr className="todo" key={todo.id}>
-              <td>{todo.name}</td>
-              <td>{todo.description}</td>
-            </tr>
-          );
-        })}
+        <thead>
+          <tr>
+            <td colSpan={3} align={"center"}>
+              <button onClick={() => printHtml(createPrintHtml(todoList))}>
+                Print
+              </button>
+            </td>
+          </tr>
+          <tr className={"addTodoForm"}>
+            <td>
+              <input
+                type={"text"}
+                placeholder={"Name"}
+                onChange={(event) =>
+                  setNewTodo((newTodo) => ({
+                    ...newTodo,
+                    name: event.target.value,
+                  }))
+                }
+              />
+            </td>
+            <td>
+              <input
+                type={"text"}
+                placeholder={"Description"}
+                onChange={(event) =>
+                  setNewTodo((newTodo) => ({
+                    ...newTodo,
+                    description: event.target.value,
+                  }))
+                }
+              />
+            </td>
+            <td>
+              <button onClick={submit}>+</button>
+            </td>
+          </tr>
+        </thead>
+        <tbody>
+          {todoList.todos.map((todo) => {
+            return (
+              <tr className="todo" key={todo.id}>
+                <td>{todo.name}</td>
+                <td>{todo.description}</td>
+              </tr>
+            );
+          })}
+        </tbody>
       </table>
     </div>
   );
+}
+
+function createPrintHtml(todoList: TodoListResponse): string {
+  return `<html lang="en">
+<body>
+<table>
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Description</th>
+    </tr>
+    </thead>
+    <tbody>
+    ${todoList.todos.map(
+      (todo) => `<tr><td>${todo.name}</td><td>${todo.description}</td></tr>`
+    )}
+    </tbody>
+</table>
+</body>
+</html>
+`;
 }
 
 export default App;
