@@ -11,14 +11,14 @@ function App() {
     description: "",
   });
 
-  const [error, setError] = useState<Error | null>(
-    null
-  );
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    fetchTodos().then(setTodoList).catch((error) => {
-      setError(error);
-    });
+    fetchTodos()
+      .then(setTodoList)
+      .catch((error) => {
+        setError(error);
+      });
   }, []);
 
   async function submit() {
@@ -49,6 +49,7 @@ function App() {
               <button onClick={() => printHtml(createPrintHtml(todoList))}>
                 Print
               </button>
+              <button onClick={() => copyToClipboard(todoList)}>Copy to clipboard</button>
             </td>
           </tr>
           <tr className={"addTodoForm"}>
@@ -115,6 +116,13 @@ function createPrintHtml(todoList: TodoListResponse): string {
 </body>
 </html>
 `;
+}
+
+async function copyToClipboard(todoList: TodoListResponse): Promise<void> {
+  const clipboardText = todoList.todos
+    .map((todo) => `${todo.name}\t${todo.description}\n`)
+    .join("");
+  await navigator.clipboard.writeText(clipboardText);
 }
 
 export default App;

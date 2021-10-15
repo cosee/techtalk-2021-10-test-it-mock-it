@@ -6,8 +6,11 @@ import { rest } from "msw";
 import { TodoListResponse } from "src/model/todos";
 import { setupMockApi } from "src/test-utils/setup-mock-api";
 import { printHtml } from "src/utils/print";
+import { mockClipboard } from "src/test-utils/mock-clipboard";
 
 jest.mock("src/utils/print");
+
+mockClipboard();
 
 const { expectRequestToHaveBeenSent, overrideHandlers } = setupMockApi(
   rest.get("/api/todos/", (req, res, ctx) => {
@@ -40,6 +43,17 @@ test("prints the todo list when print button is clicked", async () => {
   const button = await screen.findByText("Print", { selector: "button" });
   userEvent.click(button);
   expect(printHtml).toHaveBeenCalledWith(expect.stringContaining("Wake up"));
+});
+
+test("copies the todos to the clipboard, when copy-to-clipboard is clicked", async () => {
+  render(<App />);
+  const button = await screen.findByText("Copy to clipboard", {
+    selector: "button",
+  });
+  userEvent.click(button);
+  expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
+    "Wake up\tOut of the bed\nHave breakfast\tCereals, yumm\n"
+  );
 });
 
 test("entering data and clicking the plus button adds another todo", async () => {
