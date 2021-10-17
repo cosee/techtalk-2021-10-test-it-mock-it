@@ -1,24 +1,17 @@
 import React from "react";
 import nock from "nock";
 import App from "src/App";
-import {render, screen} from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 
 beforeEach(() => {
   nock.disableNetConnect();
   nock("http://localhost")
+      .persist()
     .get("/api/todos")
     .reply(200, {
       todos: [
-        {
-          id: 1,
-          name: "Wake up",
-          description: "Out of the bed",
-        },
-        {
-          id: 2,
-          name: "Have breakfast",
-          description: "Cereals, yumm",
-        },
+        { id: 1, name: "Wake up", description: "Out of the bed" },
+        { id: 2, name: "Have breakfast", description: "Cereals, yum" },
       ],
     });
 });

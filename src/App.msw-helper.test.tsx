@@ -7,12 +7,19 @@ import { TodoListResponse } from "src/model/todos";
 import { setupMockApi } from "src/test-utils/setup-mock-api";
 import { printHtml } from "src/utils/print";
 import { mockClipboard } from "src/test-utils/mock-clipboard";
+import {mockConsole} from "src/test-utils/mock-console";
+import {mockWindowOpen} from "src/test-utils/mock-window-open";
 
 jest.mock("src/utils/print");
 
 mockClipboard();
+mockConsole('error')
+mockWindowOpen()
 
-const { expectRequestToHaveBeenSent, overrideHandlers } = setupMockApi(
+const {
+  expectRequestToHaveBeenSent,
+  overrideHandlers
+} = setupMockApi(
   rest.get("/api/todos/", (req, res, ctx) => {
     return res(
       ctx.json<TodoListResponse>({
@@ -28,9 +35,6 @@ const { expectRequestToHaveBeenSent, overrideHandlers } = setupMockApi(
   })
 );
 
-afterEach(async () => {
-  await new Promise((resolve) => setTimeout(resolve, 500));
-});
 
 test("renders the name of the todos loaded from the backend", async () => {
   render(<App />);
