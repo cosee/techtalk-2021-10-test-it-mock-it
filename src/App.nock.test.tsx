@@ -1,7 +1,7 @@
 import React from "react";
 import nock from "nock";
 import App from "src/App";
-import { render, screen } from "@testing-library/react";
+import {render, screen} from "@testing-library/react";
 
 beforeEach(() => {
   nock.disableNetConnect();
@@ -19,7 +19,9 @@ beforeEach(() => {
 afterEach(() => {
   nock.enableNetConnect();
   nock.restore();
+  nock.cleanAll()
 });
+
 
 test("renders the name of the todos loaded from the backend", async () => {
   render(<App />);
@@ -27,6 +29,3 @@ test("renders the name of the todos loaded from the backend", async () => {
   expect(await screen.findByText("Have breakfast")).toBeInTheDocument();
 });
 
-afterEach(() => {
-  nock.cleanAll();
-});

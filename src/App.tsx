@@ -1,19 +1,17 @@
-import React, { useEffect, useState } from "react";
-import { TodoListResponse, TodoRequest } from "src/model/todos";
+import React, { useCallback, useEffect, useState } from "react";
+import { TodoListResponse } from "src/model/todos";
 import { fetchTodos } from "src/backend/fetchTodos";
-import { addTodo } from "src/backend/addTodo";
-import { printHtml } from "src/utils/print";
+import { CopyToClipboardButton } from "src/components/CopyToClipboardButton";
+import { PrintButton } from "src/components/PrintButton";
+import { TodoTable } from "src/components/table/TodoTable";
+import { ShowError } from "src/components/ShowError";
+import { ShowLoadingMessage } from "src/components/ShowLoadingMessage";
 
 function App() {
   const [todoList, setTodoList] = useState<TodoListResponse>();
-  const [newTodo, setNewTodo] = useState<TodoRequest>({
-    name: "",
-    description: "",
-  });
-
   const [error, setError] = useState<Error | null>(null);
 
-  useEffect(() => {
+  const loadAndUpdateTodos = useCallback(() => {
     fetchTodos()
       .then(setTodoList)
       .catch((error) => {
@@ -21,108 +19,27 @@ function App() {
       });
   }, []);
 
-  async function submit() {
-    await addTodo(newTodo);
-    const todos = await fetchTodos();
-    setTodoList(todos);
-  }
+  useEffect(() => {
+    loadAndUpdateTodos();
+  }, [loadAndUpdateTodos]);
 
   if (error != null) {
-    return (
-      <div>
-        <h1>An error occurred while loading todos</h1>
-        <p>{error.message}</p>
-      </div>
-    );
+    return <ShowError error={error} />;
   }
 
   if (todoList == null) {
-    return <div>Loading...</div>;
+    return <ShowLoadingMessage />;
   }
 
   return (
     <div className="App">
-      <table>
-        <thead>
-          <tr>
-            <td colSpan={3} align={"center"}>
-              <button onClick={() => printHtml(createPrintHtml(todoList))}>
-                Print
-              </button>
-              <button onClick={() => copyToClipboard(todoList)}>Copy to clipboard</button>
-            </td>
-          </tr>
-          <tr className={"addTodoForm"}>
-            <td>
-              <input
-                type={"text"}
-                placeholder={"Name"}
-                onChange={(event) =>
-                  setNewTodo((newTodo) => ({
-                    ...newTodo,
-                    name: event.target.value,
-                  }))
-                }
-              />
-            </td>
-            <td>
-              <input
-                type={"text"}
-                placeholder={"Description"}
-                onChange={(event) =>
-                  setNewTodo((newTodo) => ({
-                    ...newTodo,
-                    description: event.target.value,
-                  }))
-                }
-              />
-            </td>
-            <td>
-              <button onClick={submit}>+</button>
-            </td>
-          </tr>
-        </thead>
-        <tbody>
-          {todoList.todos.map((todo) => {
-            return (
-              <tr className="todo" key={todo.id}>
-                <td>{todo.name}</td>
-                <td>{todo.description}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <div className={"actionButtons"}>
+        <CopyToClipboardButton todoList={todoList} />
+        <PrintButton todoList={todoList} />
+      </div>
+      <TodoTable todoList={todoList} onChange={() => loadAndUpdateTodos()} />
     </div>
   );
-}
-
-function createPrintHtml(todoList: TodoListResponse): string {
-  return `<html lang="en">
-<body>
-<table>
-    <thead>
-    <tr>
-        <th>Name</th>
-        <th>Description</th>
-    </tr>
-    </thead>
-    <tbody>
-    ${todoList.todos.map(
-      (todo) => `<tr><td>${todo.name}</td><td>${todo.description}</td></tr>`
-    )}
-    </tbody>
-</table>
-</body>
-</html>
-`;
-}
-
-async function copyToClipboard(todoList: TodoListResponse): Promise<void> {
-  const clipboardText = todoList.todos
-    .map((todo) => `${todo.name}\t${todo.description}\n`)
-    .join("");
-  await navigator.clipboard.writeText(clipboardText);
 }
 
 export default App;
